@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Station Draw</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light;--bg:#f6efe2;--panel:#fffaf0;--ink:#2a2140;--mute:#6f6585;--line:#e3d7bf;--N:#8a8fa3;--R:#2f8f83;--SR:#8a4fd1;--SSR:#d98a00;--btn:#2a2140;--btnink:#fff6e0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#1a1638;--panel:#251f4d;--ink:#fbefd5;--mute:#a79fc9;--line:#3a3270;--N:#a3a8bf;--R:#4fc4b4;--SR:#b47cff;--SSR:#ffb938;--btn:#ffb938;--btnink:#1a1638}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#1a1638;--panel:#251f4d;--ink:#fbefd5;--mute:#a79fc9;--line:#3a3270;--N:#a3a8bf;--R:#4fc4b4;--SR:#b47cff;--SSR:#ffb938;--btn:#ffb938;--btnink:#1a1638}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,sans-serif;line-height:1.5}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-size:2rem;font-weight:800;margin:0;letter-spacing:-.02em}
+.gems{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:600}
+.stage{margin:20px 0;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;min-height:250px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.lantern{font-size:5rem;animation:sway 3s ease-in-out infinite}
+@keyframes sway{50%{transform:rotate(6deg) translateY(4px)}}
+.stage p{margin:0;color:var(--mute);text-align:center;max-width:40ch}
+.results{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;width:100%}
+.card{width:104px;border:2px solid var(--c);border-radius:14px;padding:10px 4px;text-align:center;background:var(--bg);animation:flip .5s both;animation-delay:calc(var(--i)*.12s)}
+.card b{display:block;font-size:.75rem;color:var(--c)}
+.card span{font-size:2rem;display:block}
+.card small{font-size:.7rem;color:var(--mute)}
+.card a{display:block;margin-top:6px;font-size:.7rem;font-weight:600;color:var(--ink);text-decoration:underline}
+.card.SSR{box-shadow:0 0 18px var(--c)}
+@keyframes flip{from{transform:rotateY(90deg) scale(.8);opacity:0}}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+button{font:inherit;font-weight:600;border-radius:12px;padding:12px 20px;cursor:pointer;border:2px solid var(--btn);background:var(--btn);color:var(--btnink)}
+button.alt{background:transparent;color:var(--ink);border-color:var(--line)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--SR);outline-offset:2px}
+.meta{display:flex;gap:16px;flex-wrap:wrap;color:var(--mute);font-size:.9rem;margin-top:12px}
+h2{font-size:1.2rem;margin:28px 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.slot{border:1.5px solid var(--c,var(--line));border-radius:12px;padding:8px 2px;text-align:center;font-size:.7rem;color:var(--mute);background:var(--panel)}
+.slot span{font-size:1.7rem;display:block}
+.slot.locked{opacity:.45;--c:var(--line)}
+.slot.locked span{filter:grayscale(1) brightness(.6)}
+.slot em{position:absolute}
+table{border-collapse:collapse;font-size:.9rem}
+td,th{padding:4px 14px 4px 0;text-align:left}
+.track{position:relative;width:100%;height:76px;overflow:hidden;border-bottom:6px solid var(--line)}
+.train{position:absolute;bottom:6px;left:50%;margin-left:-87px;display:flex;gap:3px;animation:arrive 1.8s cubic-bezier(.15,.7,.3,1) both}
+.car{width:56px;height:38px;border-radius:8px 8px 4px 4px;background:var(--tc);position:relative}
+.car:last-child{border-radius:8px 18px 4px 4px}
+.car::before{content:"";position:absolute;left:6px;right:6px;top:8px;height:12px;border-radius:3px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.8) 0 10px,transparent 10px 14px)}
+@keyframes arrive{from{transform:translateX(-110vw)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>Station Draw</h1><div class="gems" id="gems"></div></header>
+<div class="stage" id="stage"><div class="lantern">🚇</div><p>Tap in to collect Singapore MRT stations. Ten draws always include at least one Rare or better.</p></div>
+<div class="actions">
+<button id="p1">Draw ×1 · 160 points</button>
+<button id="p10">Draw ×10 · 1,600 points</button>
+<button class="alt" id="daily">Claim daily 320 points</button>
+<button class="alt" id="reset">Reset</button>
+</div>
+<div class="meta"><span id="pity"></span><span id="total"></span></div>
+<button class="alt" id="ratesBtn" aria-expanded="false" style="margin-top:20px">Show rates</button>
+<table id="rates" hidden style="margin-top:12px"><tr><th>Rarity</th><th>Chance</th></tr>
+<tr><td style="color:var(--SSR)">SSR</td><td>1.5% (guaranteed by draw 80)</td></tr>
+<tr><td style="color:var(--SR)">SR</td><td>8.5%</td></tr>
+<tr><td style="color:var(--R)">R</td><td>30%</td></tr>
+<tr><td style="color:var(--N)">N</td><td>60%</td></tr></table>
+<h2>Collection <span id="count" style="color:var(--mute);font-weight:400"></span></h2>
+<div class="grid" id="grid"></div>
+</main>
+<script>
+const LINES={NS:'#d42e12',EW:'#009645',CG:'#009645',NE:'#9900aa',CC:'#e08a00',CE:'#e08a00',DT:'#005ec4',TE:'#9d5b25'};
+const col=c=>LINES[c.slice(0,2)]||'#666';
+const FOOD=['chicken rice','laksa','bak kut teh','char kway teow','prawn mee','nasi lemak','roti prata','satay','fish soup','wanton mee','kaya toast','hokkien mee','carrot cake','ice kachang','curry puff'];
+const foodLink=n=>{const f=pick(FOOD);return {f,u:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(f+' near '+n+' MRT station Singapore')}};
+const POOL={
+SSR:[["NS27","Marina Bay"],["TE22","Gardens by the Bay"],["CG2","Changi Airport"],["CC19","Botanic Gardens"],["CE1","Bayfront"],["CC3","Esplanade"]],
+SR:[["NS24","Dhoby Ghaut"],["NS26","Raffles Place"],["NS17","Bishan"],["NS1","Jurong East"],["NE12","Serangoon"],["EW8","Paya Lebar"],["EW2","Tampines"],["NS9","Woodlands"],["EW21","Buona Vista"],["EW16","Outram Park"]],
+R:[["NS22","Orchard"],["EW12","Bugis"],["NE5","Clarke Quay"],["NE4","Chinatown"],["NE7","Little India"],["NE1","HarbourFront"],["NS23","Somerset"],["CC2","Bras Basah"],["CC4","Promenade"],["EW11","Lavender"],["EW17","Tiong Bahru"],["NE8","Farrer Park"]],
+N:[["EW5","Bedok"],["EW6","Kembangan"],["EW7","Eunos"],["NS13","Yishun"],["NS16","Ang Mo Kio"],["NS19","Toa Payoh"],["EW23","Clementi"],["EW18","Redhill"],["EW3","Simei"],["CG1","Expo"],["EW1","Pasir Ris"],["NS2","Bukit Batok"],["NS4","Choa Chu Kang"],["NS11","Sembawang"],["NS7","Kranji"],["NS10","Admiralty"],["NS20","Novena"]]};
+const RATE={SSR:.015,SR:.085,R:.3};
+const COST=160,PITY=80,KEY='station-draw-v1';
+const fresh=()=>({gems:1600,pity:0,total:0,own:{},daily:''});
+let S=fresh();
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(fresh(),JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const $=id=>document.getElementById(id);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function roll(minR){
+ let r;
+ if(S.pity+1>=PITY)r='SSR';
+ else{const x=Math.random();r=x<RATE.SSR?'SSR':x<RATE.SSR+RATE.SR?'SR':x<RATE.SSR+RATE.SR+RATE.R?'R':'N';
+  if(minR&&r==='N')r='R'}
+ S.pity=r==='SSR'?0:S.pity+1;S.total++;
+ const [e,n]=pick(POOL[r]);
+ S.own[n]=(S.own[n]||0)+1;
+ return{r,e,n,dupe:S.own[n]>1};
+}
+function anim(done){
+ ['p1','p10','daily','reset'].forEach(id=>$(id).disabled=true);
+ $('stage').innerHTML='<div class="track"><div class="train" style="--tc:'+pick(Object.values(LINES))+'"><div class="car"></div><div class="car"></div><div class="car"></div></div></div><p>Train arriving at the platform…</p>';
+ setTimeout(()=>{$('reset').disabled=false;done();render()},2400);
+}
+function draw(n){
+ if(S.gems<COST*n)return;
+ S.gems-=COST*n;
+ const out=[];let hit=false;
+ for(let i=0;i<n;i++){
+  const last=i===n-1&&n===10&&!hit;
+  const res=roll(last);
+  if(res.r!=='N')hit=true;
+  out.push(res);
+ }
+ save();render();
+ const show=()=>{$('stage').innerHTML='<div class="results">'+out.map((c,i)=>
+  `<div class="card ${c.r}" style="--c:var(--${c.r});--i:${i}"><b>${c.r}</b><span style="font-size:1.15rem;font-weight:800;color:#fff;background:${col(c.e)};border-radius:6px;padding:2px 0;margin:4px 6px">${c.e}</span><small>${c.n}${c.dupe?' (again)':' · new'}</small>${(()=>{const l=foodLink(c.n);return `<a href="${l.u}" target="_blank" rel="noopener noreferrer">🍜 ${l.f}</a>`})()}</div>`).join('')+'</div>';};
+ if(n===1)anim(show);else show();
+}
+function render(){
+ $('gems').textContent='🎫 '+S.gems.toLocaleString()+' GoSimply points';
+ $('pity').textContent='Draws since last SSR: '+S.pity+' / '+PITY;
+ $('total').textContent='Total draws: '+S.total;
+ $('p1').disabled=S.gems<COST;$('p10').disabled=S.gems<COST*10;
+ const today=new Date().toDateString();
+ $('daily').disabled=S.daily===today;
+ $('daily').textContent=S.daily===today?'Daily claimed':'Claim daily 320 points';
+ let h='',have=0,all=0;
+ for(const r of ['SSR','SR','R','N'])for(const [e,n] of POOL[r]){
+  all++;const c=S.own[n];if(c)have++;
+  h+=`<div class="slot ${c?'':'locked'}" style="--c:var(--${r})"><span style="font-size:1.1rem;font-weight:800;color:#fff;background:${c?col(e):'var(--mute)'};border-radius:6px;padding:2px 0;margin:2px 6px 4px">${c?e:'?'}</span>${c?n+(c>1?' ×'+c:''):'Unknown'}</div>`;
+ }
+ $('grid').innerHTML=h;$('count').textContent=have+' / '+all;
+}
+$('p1').onclick=()=>draw(1);
+$('ratesBtn').onclick=()=>{const t=$('rates'),b=$('ratesBtn'),show=t.hidden;t.hidden=!show;b.textContent=show?'Hide rates':'Show rates';b.setAttribute('aria-expanded',show)};
+$('p10').onclick=()=>draw(10);
+$('daily').onclick=()=>{S.gems+=320;S.daily=new Date().toDateString();save();render()};
+let rt;
+$('reset').onclick=()=>{const b=$('reset');if(b.dataset.arm!=='1'){b.dataset.arm='1';b.textContent='Tap again to confirm reset';clearTimeout(rt);rt=setTimeout(()=>{b.dataset.arm='';b.textContent='Reset'},4000);return}clearTimeout(rt);b.dataset.arm='';b.textContent='Reset';S=fresh();save();render();$('stage').innerHTML='<div class="lantern">🚇</div><p>Tap in to collect Singapore MRT stations.</p>'};
+render();
+</script>
+</body>
+</html>
